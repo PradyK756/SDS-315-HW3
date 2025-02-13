@@ -1,0 +1,220 @@
+---
+title: "SDS315 Homework 3 Report"
+author: "Prady Kandi, EID: prk599"
+date: "2025-02-13"
+output:
+  pdf_document:
+    toc: true
+urlcolor: blue
+---
+
+The link to the Github repo containing the R file can be found [here](https://github.com/PradyK756/SDS-315-HW3).
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(mosaic)
+library(mosaicCore)
+library(knitr)
+```
+
+```{r imports, echo = FALSE}
+gas <- read.csv("gasprices.csv")
+gas_graph <- ggplot(gas)
+cars <- read.csv("sclass.csv")
+cars_graph <- ggplot(cars)
+shows <- read.csv("nbc_pilotsurvey.csv")
+shows_graph <- ggplot(shows)
+ebay <- read.csv("ebay.csv")
+ebay_graph <- ggplot(ebay)
+```
+
+# Problem 1
+
+
+## Part A
+
+```{r 1.1, echo=FALSE, message = FALSE}
+gasA = confint((do(10000)*diffmean(Price~Competitors, data=mosaic::resample(gas)))$diffmean, level = 0.95)
+
+gasA_title <- setNames(gasA, c("2.5%", "97.5%"))
+
+kable(as.data.frame(t(gasA_title)), col.names = c("Percentile", "Difference in Means"), caption = "95% Confidence Interval for Difference in Means of Gas Prices based on Direct Competition")
+```
+The first theory states that gas stations without direct competition charge more on their prices. The 95% confidence interval spans from around -6 cents to 1 cent. Since this interval includes 0, it can be concluded that there is no significant difference, and so gas stations do not charge higher prices due to lack of direct competition. The stated theory is unsupported by evidence.
+
+## Part B
+
+```{r 1.2, echo = FALSE, message = FALSE}
+gasB <- confint(
+  (do(10000) * cor(Price~Income, data = mosaic::resample(gas)))$cor,
+  level = 0.95
+)
+
+# Rename columns for better readability
+gasB_title <- setNames(gasB, c("2.5%", "97.5%"))
+
+# Display the confidence interval for the correlation coefficient
+kable(as.data.frame(t(gasB_title)), col.names = c("Percentile", "Correlation"), 
+      caption = "95% Confidence Interval for Correlation between Price of Gas and Area Income")
+```
+The second theory states that the prices of gas stations correlate with average income in the area. The 95% confidence interval spans from around .19 to .57. This interval only contains positive measurements, and with the average around .38, it can be concluded that there is a moderate correlation between gas prices and income. The data supports the theory that richer areas have higher gas prices.
+
+## Part C
+
+```{r 1.3, echo = FALSE, message = FALSE}
+gasC = confint((do(10000)*diffmean(Price~Stoplight, data=mosaic::resample(gas)))$diffmean, level = 0.95)
+
+gasC_title <- setNames(gasC, c("2.5%", "97.5%"))
+
+kable(as.data.frame(t(gasC_title)), col.names = c("Percentile", "Difference in Means"), caption = "95% Confidence Interval for Difference in Means of Gas Prices based on Stoplight Proximity")
+
+
+```
+The third theory states that gas stations at stoplights charge higher prices. The 95% confidence interval spans from around -4 cents to 3 cents. Since this interval includes 0, it can be concluded that there is no significant difference, and so gas stations do not charge higher prices if they are located at a stoplight. The stated theory is unsupported by evidence.
+
+\newpage
+
+## Part D 
+```{r 1.4, echo = FALSE, message = FALSE}
+gasD = confint((do(10000)*diffmean(Price~Highway, data=mosaic::resample(gas)))$diffmean, level = 0.95)
+
+gasD_title <- setNames(gasD, c("2.5%", "97.5%"))
+
+kable(as.data.frame(t(gasD_title)), col.names = c("Percentile", "Difference in Means"), caption = "95% Confidence Interval for Difference in Means of Gas Prices based on Highway Proximity")
+```
+The fourth theory states that gas stations located directly off of highways charge more on their prices. The 95% confidence interval spans from less than a cent to 8 cents. The interval does not include 0 and only contains positive measurements, so it can be concluded that there is a significant difference, and so gas stations do in fact charge higher prices if located directly next to a highway. The theory is supported by the data.
+
+## Part E
+
+```{r 1.5, echo=FALSE, message = FALSE}
+gasEmod <- gas |>
+mutate(Shell = (Brand == "Shell"))
+
+gasE = confint((do(10000)*diffmean(Price~Shell, data=mosaic::resample(gasEmod)))$diffmean, level = 0.95)
+
+gasE_title <- setNames(gasE, c("2.5%", "97.5%"))
+
+kable(as.data.frame(t(gasE_title)), col.names = c("Percentile", "Difference in Means"), caption = "95% Confidence Interval for Difference in Means of gas Prices based on Shell Brand")
+
+```
+The fifth theory states that Shell gas stations charge higher prices than other brands. The 95% confidence interval spans from around -1 cents to 6  cents. Since this interval includes 0, it can be concluded that there is no significant difference, and so Shell gas stations do not charge higher prices. The stated theory is unsupported by evidence.
+
+\newpage
+
+# Problem 2
+
+## Part A
+
+```{r 2.1, echo=FALSE, message = FALSE}
+carsAmod <- cars |>
+  filter(year == 2011) |>
+  filter(trim == "63 AMG")
+  
+
+carsA = confint((do(10000) * mean(~mileage,data=mosaic::resample(carsAmod)))$mean, level = 0.95)
+
+# Rename columns for better readability
+carsA_title <- setNames(carsA, c("2.5%", "97.5%"))
+
+# Display the confidence interval in a table format
+kable(as.data.frame(t(carsA_title)), col.names = c("Percentile", "Mean Mileage"), 
+      caption = "95% Confidence Interval for Average Mileage")
+```
+The lower bound of the 95% interval is around 26000 miles and the upper bound is 32000 miles, implying that the true mean is within this set with a 95% chance; that is, the average mileage of all given cars made in 2011 and with a 63 AMG trim.
+
+## Part B
+
+```{r 2.2, echo=FALSE, message = FALSE}
+carsBmod <- cars |>
+  mutate(Black = (color == "Black")) |>
+  filter(year == 2014) |>
+  filter(trim == "550")
+
+carsB = confint((do(10000) * mean(~Black,data=mosaic::resample(carsBmod)))$mean, level = 0.95)
+
+# Rename columns for better readability
+carsB_title <- setNames(carsB, c("2.5%", "97.5%"))
+
+# Display the confidence interval in a table format
+kable(as.data.frame(t(carsB_title)), col.names = c("Percentile", "Proportion"), 
+      caption = "95% Confidence Interval for Proportion of Black Cars")
+```
+The lower bound of the 95% interval is around 41.6% and the upper bound is 45.3%, implying that the true mean is within this set with a 95% chance; that is, the chance that all cars made in 2014 and with a 550 trim are black.
+
+
+\newpage
+
+# Problem 3
+
+## Part A
+
+```{r 3.1, echo=FALSE, message = FALSE}
+showsAmod <- shows |>
+  filter(Show == "Living with Ed" | Show == "My Name is Earl") 
+
+showsA = confint((do(10000)*diffmean(Q1_Happy~Show, data=mosaic::resample(showsAmod)))$diffmean, level = 0.95)
+
+showsA_title <- setNames(showsA, c("2.5%", "97.5%"))
+
+kable(as.data.frame(t(showsA_title)), col.names = c("Percentile", "Difference in Means"), caption = "95% Confidence Interval for Difference in Means of Happiness")
+
+```
+The question we are trying to answer is whether the pilot episode of Living with Ed or My Name is Earl received higher happiness ratings. To answer the question, a Monte Carlo simulation was utilized with a 95% confidence interval, where the simulation was run 10000 times. The results were then compiled into a table to observe the results. The difference ranges from -0.4 to 0.1, indicating there is no significant difference. It can be said that the true difference between the two happiness ratings is insignificant and lies within the given range with 95% certainty, implying that neither show received substantially better or worse happiness ratings than the other.
+
+## Part B
+
+```{r 3.2, echo=FALSE, message = FALSE}
+showsBmod <- shows |>
+  filter(Show == "The Biggest Loser" | Show == "The Apprentice: Los Angeles") 
+
+showsB = confint((do(10000)*diffmean(Q1_Annoyed~Show, data=mosaic::resample(showsBmod)))$diffmean, level = 0.95)
+
+showsB_title <- setNames(showsB, c("2.5%", "97.5%"))
+
+kable(as.data.frame(t(showsB_title)), col.names = c("Percentile", "Difference in Means"), caption = "95% Confidence Interval for Difference in Means of Annoyance")
+```
+The question we are trying to answer is whether the pilot episode of The Biggest Loser or The Apprentice: Los Angeles received higher annoyance ratings. To answer the question, a Monte Carlo simulation was utilized with a 95% confidence interval, where the simulation was run 10000 times. The results were then compiled into a table to observe the results. The difference ranges from -.55 to -.01, indicating there is a significant difference. It can be said that the true difference between the two happiness ratings is indeed significant, and that The Apprentice: LA pilot received higher annoyance ratings. The data for this conclusion lies within the given range with 95% certainty, showing that it is very likely the viewers as a population were more annoyed with the The Apprentice: LA pilot than the The Biggest Loser pilot.
+
+\newpage
+
+## Part C
+
+
+```{r 3.3, echo=FALSE, message = FALSE}
+showsCmod <- shows |>
+  filter(Show == "Dancing with the Stars") |>
+  mutate(Confused = (Q2_Confusing >= 4))
+
+showsC = confint((do(10000) * mean(~Confused,data=mosaic::resample(showsCmod)))$mean, level = 0.95)
+
+# Rename columns for better readability
+showsC_title <- setNames(showsC, c("2.5%", "97.5%"))
+
+# Display the confidence interval in a table format
+kable(as.data.frame(t(showsC_title)), col.names = c("Percentile", "Mean Viewers Confused"), 
+      caption = "95% Confidence Interval for Confused Viewers of Dancing with the Stars")
+```
+
+The question we are trying to answer is how many viewers were confused with the pilot of Dancing with the Stars, ie. agreed or strongly agreed that they were confused. To answer the question, a Monte Carlo simulation was utilized with a 95% confidence interval, where the simulation was run 10000 times. The results were then compiled into a table to observe the results. The mean ranges from 3.5% to 12%. It can be said that the true percentage of viewers confused lies within this range with 95% certainty. In conclusion, there is a 95% certainty that the average proportion of confused viewers ranges from 3.5% to 12%. It can be concluded that a slim minority of the population found the pilot confusing, with most viewers able to understand it.
+
+
+# Problem 4
+
+## Part A
+
+```{r 4.1, echo=FALSE, message = FALSE}
+ebayAmod <- ebay |>
+  mutate(rev_ratio = rev_after/rev_before)
+
+ebayA = confint((do(10000)*diffmean(rev_ratio~adwords_pause, data=mosaic::resample(ebayAmod)))$diffmean, level = 0.95)
+
+ebayA_title <- setNames(ebayA, c("2.5%", "97.5%"))
+
+kable(as.data.frame(t(ebayA_title)), col.names = c("Percentile", "Difference in Means"), caption = "95% Confidence Interval for Difference in Means of Revenue Ratio")
+```
+The question we are trying to answer is whether there was a substantial difference in eBay's relative revenue depending on whether or not they ran ads on Google. To solve the question, a Monte Carlo simulation was utilized with a 95% confidence interval, where the simulation was run 10000 times. The results were then compiled into a table to observe the results. The difference ranges from -.09 to -.01, indicating there is a significant difference. The data indicates that eBay did make less money when not running ads, and that the relative amount lost is within the aforementioned interval with 95% certainty. Therefore, it is more efficient for eBay to run ads on Google as opposed to not doing so if they wish to generate the most revenue.
+
